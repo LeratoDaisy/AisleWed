@@ -1,98 +1,165 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Colors, Radius, Spacing } from '../constants/theme';
+import { wedding } from '../data/wedding';
 
 export default function HomeScreen() {
+  const budgetUsed = wedding.budget.expenses.reduce(
+    (sum, e) => sum + e.amount,
+    0
+  );
+
+  const budgetLeft = wedding.budget.total - budgetUsed;
+
+  const completedTasks = wedding.tasks.total - wedding.tasks.remaining;
+
+  const daysLeft = 120;
+
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    <ScrollView style={styles.container}>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+      <Text style={styles.brand}>AisleWed</Text>
+      <Text style={styles.tagline}>
+        Your wedding, beautifully orchestrated
+      </Text>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+      {/* HERO */}
+      <View style={styles.heroCard}>
+        <Text style={styles.heroTitle}>{wedding.coupleName}</Text>
+        <Text style={styles.heroSubtitle}>
+          Wedding Date: {wedding.weddingDate}
+        </Text>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+        <View style={styles.heroRow}>
+          <View>
+            <Text style={styles.heroLabel}>Days Left</Text>
+            <Text style={styles.heroValue}>{daysLeft}</Text>
+          </View>
+
+          <View>
+            <Text style={styles.heroLabel}>Guests</Text>
+            <Text style={styles.heroValue}>
+              {wedding.guests.invited}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Budget */}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Budget Overview</Text>
+
+        <Text style={styles.item}>
+          Total: R{wedding.budget.total}
+        </Text>
+        <Text style={styles.item}>
+          Spent: R{budgetUsed}
+        </Text>
+        <Text style={styles.item}>
+          Remaining: R{budgetLeft}
+        </Text>
+      </View>
+
+      {/* Tasks */}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Tasks Progress</Text>
+
+        <Text style={styles.item}>
+          Completed: {completedTasks} / {wedding.tasks.total}
+        </Text>
+      </View>
+
+      {/* Guests */}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Guest Summary</Text>
+
+        <Text style={styles.item}>
+          Invited: {wedding.guests.invited}
+        </Text>
+
+        <Text style={styles.item}>
+          Confirmed: {wedding.guests.confirmed}
+        </Text>
+      </View>
+
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: Colors.background,
+    padding: Spacing.lg,
+  },
+
+  brand: {
+    fontSize: 34,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+
+  tagline: {
+    fontSize: 14,
+    color: Colors.muted,
+    marginBottom: Spacing.lg,
+  },
+
+  heroCard: {
+    backgroundColor: Colors.card,
+    padding: Spacing.lg,
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginBottom: Spacing.lg,
+  },
+
+  heroTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+
+  heroSubtitle: {
+    fontSize: 13,
+    color: Colors.muted,
+    marginBottom: Spacing.md,
+  },
+
+  heroRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+
+  heroLabel: {
+    fontSize: 12,
+    color: Colors.muted,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+
+  heroValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text,
   },
-  title: {
-    textAlign: 'center',
+
+  card: {
+    backgroundColor: Colors.card,
+    padding: Spacing.lg,
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginBottom: Spacing.md,
   },
-  code: {
-    textTransform: 'uppercase',
+
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: Spacing.sm,
+    color: Colors.text,
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+
+  item: {
+    fontSize: 14,
+    color: Colors.muted,
+    marginBottom: 6,
   },
 });
